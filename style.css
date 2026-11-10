@@ -255,7 +255,7 @@ a {
 }
 
 .avatar-img {
-  background: url("image00005.jpg") center / cover no-repeat;
+  background: url("./image00005.jpg") center / cover no-repeat;
 }
 
 /* =========================================
