@@ -643,3 +643,168 @@ a {
     left: -33px;
   }
 }
+
+/* =========================================
+   Contact page (uses the variables from style.css)
+   ========================================= */
+.contact-page {
+  min-height: calc(100vh - 69px);
+  display: grid;
+  place-items: center;
+  padding: 56px 16px;
+  background:
+    radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.12), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(30, 58, 138, 0.08), transparent 40%),
+    var(--bg-alt);
+}
+
+.contact-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px 32px;
+  box-shadow: var(--shadow-hover);
+}
+
+/* ---------- progress ---------- */
+.steps {
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  margin-bottom: 28px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.step { display: flex; align-items: center; gap: 8px; }
+.step span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  font-weight: 700;
+  transition: all 0.3s;
+}
+.step.is-active { color: var(--text); font-weight: 600; }
+.step.is-active span,
+.step.is-done span {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff;
+}
+
+/* ---------- panels ---------- */
+.panel { display: none; }
+.panel.is-visible { display: block; animation: slideIn 0.4s ease; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+.contact-card h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+.sub {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  word-break: break-word;
+}
+
+/* ---------- fields ---------- */
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+.field.has-error input { border-color: #dc2626; }
+.error {
+  display: block;
+  min-height: 18px;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #dc2626;
+}
+.form-message {
+  min-height: 22px;
+  margin: 4px 0 12px;
+  font-size: 0.9rem;
+  color: #dc2626;
+  text-align: center;
+}
+
+/* ---------- buttons (extends .btn from style.css) ---------- */
+button.btn {
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+.btn-block {
+  width: 100%;
+  justify-content: center;
+}
+.btn:disabled { opacity: 0.7; cursor: wait; transform: none; }
+.btn.is-loading .btn-label::after {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 10px;
+  vertical-align: -2px;
+  border: 2px solid #fff;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- success ---------- */
+#step-success { text-align: center; }
+.check { width: 90px; height: 90px; margin: 8px auto 20px; }
+.check svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--primary-light);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.check circle { stroke-dasharray: 151; stroke-dashoffset: 151; animation: draw 0.6s ease forwards; }
+.check path { stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw 0.4s 0.5s ease forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+@media (max-width: 480px) {
+  .contact-card { padding: 28px 20px; }
+  .row { grid-template-columns: 1fr; gap: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-page *, .contact-page *::before, .contact-page *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .check circle, .check path { stroke-dashoffset: 0; }
+}
