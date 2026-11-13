@@ -66,7 +66,17 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 28px;
   height: 68px;
+}
+
+/* Links sit on the right, next to the Dashboard button (which stays visible on mobile) */
+.nav-links {
+  margin-left: auto;
+}
+
+.nav-btn {
+  white-space: nowrap;
 }
 
 .logo {
@@ -801,7 +811,140 @@ button.btn {
   .row { grid-template-columns: 1fr; gap: 0; }
 }
 
+/* =========================================
+   Small button (navbar Dashboard, dashboard actions)
+   ========================================= */
+.btn-sm {
+  padding: 7px 16px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* =========================================
+   Admin dashboard (admin.html)
+   ========================================= */
+.admin-page {
+  place-items: start center;
+}
+
+.admin-page #login-view {
+  margin-top: 40px;
+}
+
+.admin-panel {
+  width: 100%;
+  max-width: 1000px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--shadow-hover);
+  animation: slideIn 0.4s ease;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.admin-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.admin-header .sub {
+  margin-bottom: 0;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-panel .form-message {
+  text-align: left;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.contacts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.contacts-table th,
+.contacts-table td {
+  padding: 12px 16px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.contacts-table th {
+  background: var(--bg-alt);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+.contacts-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.contacts-table tbody tr:hover {
+  background: var(--primary-soft);
+}
+
+.contacts-table td:first-child {
+  color: var(--text-muted);
+}
+
+.contacts-table a {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.contacts-table a:hover {
+  text-decoration: underline;
+}
+
+.contacts-table .empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px 16px;
+}
+
+@media (max-width: 600px) {
+  .admin-panel {
+    padding: 22px 16px;
+  }
+
+  .admin-header {
+    margin-bottom: 8px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .admin-panel {
+    animation: none;
+  }
+
   .contact-page *, .contact-page *::before, .contact-page *::after {
     animation: none !important;
     transition: none !important;
