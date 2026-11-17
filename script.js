@@ -265,6 +265,20 @@ if (loginForm) {
 
     setMessage(forgotForm, "");
     setLoading(forgotForm, true);
+
+    // Ask the database whether this is the admin email (returns true/false only;
+    // see supabase/migrations/20261118000000_is_admin_email.sql).
+    const { data: isAdmin, error: checkError } = await db.rpc("is_admin_email", { p_email: email });
+    if (checkError) {
+      setLoading(forgotForm, false);
+      console.error(checkError);
+      return setMessage(forgotForm, "Could not send the link. Please try again.");
+    }
+    if (!isAdmin) {
+      setLoading(forgotForm, false);
+      return setMessage(forgotForm, "This email is not the admin email.");
+    }
+
     // The link in the email brings the user back to this page.
     // This URL must be listed in Supabase → Authentication → URL Configuration → Redirect URLs.
     const { error } = await db.auth.resetPasswordForEmail(email, {
@@ -281,9 +295,8 @@ if (loginForm) {
           : "Could not send the link. Please try again."
       );
     }
-    // Same message whether or not the email exists, so nobody can probe for the admin email.
     forgotForm.reset();
-    setMessage(forgotForm, "If this email is registered, a reset link has been sent. Check your inbox (and spam).", true);
+    setMessage(forgotForm, "Reset link sent. Check your inbox (and spam).", true);
   });
 
   // ---------- reset link opened: set the new password ----------
