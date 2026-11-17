@@ -831,9 +831,37 @@ button.btn {
   place-items: start center;
 }
 
-.admin-page #login-view {
+.admin-page #login-view,
+.admin-page #forgot-view,
+.admin-page #reset-view {
   margin-top: 40px;
 }
+
+/* Text-only button ("Forgot password?", "Back to sign in") */
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--primary-light);
+  cursor: pointer;
+}
+.link-btn:hover { text-decoration: underline; }
+.link-btn:focus-visible { outline: 2px solid var(--primary-light); outline-offset: 2px; border-radius: 4px; }
+
+.field-link {
+  display: block;
+  margin: 8px 0 0 auto;
+}
+
+.form-footer {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.form-message.is-success { color: #16a34a; }
 
 .admin-panel {
   width: 100%;

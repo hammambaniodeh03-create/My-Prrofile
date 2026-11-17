@@ -13,6 +13,12 @@ const SUPABASE_CONFIG = {
 // supabase/migrations/20261113000000_admin_read_contacts.sql.
 const ADMIN_UID = "c1baed7b-26f7-4d7d-99a1-ebf1c30350a7";
 
+// Read the password-reset link info from the URL *before* the Supabase client
+// is created, because the client consumes and clears the URL hash.
+const authHash = new URLSearchParams(location.hash.slice(1));
+const isRecoveryLink = authHash.get("type") === "recovery";
+const authLinkError = authHash.get("error_code") || authHash.get("error");
+
 // Created only on pages that load the Supabase library.
 const db = window.supabase
   ? window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
@@ -25,8 +31,10 @@ function setLoading(form, loading) {
   btn.classList.toggle("is-loading", loading);
 }
 
-function setMessage(form, text) {
-  form.querySelector(".form-message").textContent = text;
+function setMessage(form, text, isSuccess = false) {
+  const el = form.querySelector(".form-message");
+  el.textContent = text;
+  el.classList.toggle("is-success", isSuccess);
 }
 
 // =========================================
@@ -107,8 +115,11 @@ if (contactForm) {
 const loginForm = document.getElementById("login-form");
 
 if (loginForm) {
-  const loginView = document.getElementById("login-view");
-  const dashboardView = document.getElementById("dashboard-view");
+  const forgotForm = document.getElementById("forgot-form");
+  const resetForm = document.getElementById("reset-form");
+  const views = ["login-view", "forgot-view", "reset-view", "dashboard-view"].map((id) =>
+    document.getElementById(id)
+  );
   const tableBody = document.getElementById("contacts-body");
   const countText = document.getElementById("contacts-count");
   const dashboardMessage = document.getElementById("dashboard-message");
@@ -116,15 +127,23 @@ if (loginForm) {
 
   const dateFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" });
 
+  // true while the user came from a reset link and hasn't set the new password yet.
+  let recovering = false;
+
+  const RESET_LINK_INVALID = "This reset link is invalid or has expired. Please request a new one.";
+
+  // Show one screen (login / forgot / reset / dashboard) and hide the others.
+  function showView(id) {
+    views.forEach((view) => (view.hidden = view.id !== id));
+  }
+
   function showLogin(message = "") {
-    dashboardView.hidden = true;
-    loginView.hidden = false;
+    showView("login-view");
     setMessage(loginForm, message);
   }
 
   function showDashboard() {
-    loginView.hidden = true;
-    dashboardView.hidden = false;
+    showView("dashboard-view");
     loadContacts();
   }
 
@@ -189,6 +208,8 @@ if (loginForm) {
   // Signed in with an account that isn't the admin → sign it out.
   async function handleSession(session) {
     if (!session) return showLogin();
+    // Opened from a reset link: ask for the new password before showing any data.
+    if (recovering) return showView("reset-view");
     if (session.user.id !== ADMIN_UID) {
       await db.auth.signOut();
       return showLogin("This account doesn't have access.");
@@ -225,6 +246,95 @@ if (loginForm) {
 
   refreshBtn.addEventListener("click", loadContacts);
 
-  // ---------- on page load: already signed in? ----------
-  db.auth.getSession().then(({ data }) => handleSession(data.session));
+  // ---------- switch between "Sign in" and "Forgot password" ----------
+  document.querySelectorAll("[data-show]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      [loginForm, forgotForm].forEach((form) => setMessage(form, ""));
+      showView(btn.dataset.show);
+      document.querySelector(`#${btn.dataset.show} input`)?.focus();
+    });
+  });
+
+  // ---------- forgot password: email a reset link ----------
+  forgotForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = forgotForm.elements.email.value.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return setMessage(forgotForm, "Please enter a valid email.");
+    }
+
+    setMessage(forgotForm, "");
+    setLoading(forgotForm, true);
+    // The link in the email brings the user back to this page.
+    // This URL must be listed in Supabase → Authentication → URL Configuration → Redirect URLs.
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo: location.origin + location.pathname,
+    });
+    setLoading(forgotForm, false);
+
+    if (error) {
+      console.error(error);
+      return setMessage(
+        forgotForm,
+        error.status === 429
+          ? "Too many requests. Please wait a few minutes and try again."
+          : "Could not send the link. Please try again."
+      );
+    }
+    // Same message whether or not the email exists, so nobody can probe for the admin email.
+    forgotForm.reset();
+    setMessage(forgotForm, "If this email is registered, a reset link has been sent. Check your inbox (and spam).", true);
+  });
+
+  // ---------- reset link opened: set the new password ----------
+  resetForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const password = resetForm.elements.password.value;
+    const confirm = resetForm.elements.confirm.value;
+    if (password.length < 6) return setMessage(resetForm, "Password must be at least 6 characters.");
+    if (password !== confirm) return setMessage(resetForm, "Passwords don't match.");
+
+    setMessage(resetForm, "");
+    setLoading(resetForm, true);
+    const { error } = await db.auth.updateUser({ password });
+    setLoading(resetForm, false);
+
+    if (error) {
+      console.error(error);
+      const messages = {
+        same_password: "New password must be different from your current one.",
+        weak_password: "This password is too weak. Please choose a stronger one.",
+      };
+      return setMessage(resetForm, messages[error.code] || "Could not update the password. " + RESET_LINK_INVALID);
+    }
+
+    resetForm.reset();
+    recovering = false;
+    const { data } = await db.auth.getSession();
+    handleSession(data.session);
+  });
+
+  // Supabase fires this when the session came from a reset link.
+  db.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") {
+      recovering = true;
+      showView("reset-view");
+    }
+  });
+
+  // ---------- on page load ----------
+  if (authLinkError) {
+    // Expired or already-used reset link: clean the URL and explain.
+    history.replaceState(null, "", location.pathname + location.search);
+    showLogin(RESET_LINK_INVALID);
+  } else {
+    recovering = isRecoveryLink;
+    db.auth.getSession().then(({ data }) => {
+      if (recovering && !data.session) {
+        recovering = false;
+        return showLogin(RESET_LINK_INVALID);
+      }
+      handleSession(data.session);
+    });
+  }
 }

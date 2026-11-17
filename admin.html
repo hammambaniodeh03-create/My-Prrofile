@@ -40,10 +40,50 @@
         <div class="field">
           <label for="login-password">Password</label>
           <input type="password" id="login-password" name="password" autocomplete="current-password" required>
+          <button type="button" class="link-btn field-link" data-show="forgot-view">Forgot password?</button>
         </div>
 
         <p class="form-message" role="alert"></p>
         <button type="submit" class="btn btn-primary btn-block"><span class="btn-label">Sign in</span></button>
+      </form>
+    </section>
+
+    <!-- Forgot password: request a reset link by email -->
+    <section id="forgot-view" class="contact-card" hidden>
+      <h1>Reset password</h1>
+      <p class="sub">Enter your email and we'll send you a link to set a new password.</p>
+
+      <form id="forgot-form" novalidate>
+        <div class="field">
+          <label for="forgot-email">Email</label>
+          <input type="email" id="forgot-email" name="email" autocomplete="username" required>
+        </div>
+
+        <p class="form-message" role="alert"></p>
+        <button type="submit" class="btn btn-primary btn-block"><span class="btn-label">Send reset link</span></button>
+        <p class="form-footer">
+          <button type="button" class="link-btn" data-show="login-view">&larr; Back to sign in</button>
+        </p>
+      </form>
+    </section>
+
+    <!-- Set a new password (opened from the link in the email) -->
+    <section id="reset-view" class="contact-card" hidden>
+      <h1>Set a new password</h1>
+      <p class="sub">At least 6 characters.</p>
+
+      <form id="reset-form" novalidate>
+        <div class="field">
+          <label for="new-password">New password</label>
+          <input type="password" id="new-password" name="password" autocomplete="new-password" minlength="6" required>
+        </div>
+        <div class="field">
+          <label for="confirm-password">Confirm password</label>
+          <input type="password" id="confirm-password" name="confirm" autocomplete="new-password" minlength="6" required>
+        </div>
+
+        <p class="form-message" role="alert"></p>
+        <button type="submit" class="btn btn-primary btn-block"><span class="btn-label">Update password</span></button>
       </form>
     </section>
 
